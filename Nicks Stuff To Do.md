@@ -1,0 +1,3 @@
+- .env support
+- multi point
+- viewporting correctly

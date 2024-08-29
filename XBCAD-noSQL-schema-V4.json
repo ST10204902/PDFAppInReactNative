@@ -1,0 +1,81 @@
+{
+  "students": {
+    "student_id": {
+      "student_id": "string",
+      "studentNumber": "string",
+      "email": "string",
+      "profilePhotoURL": "string?",
+      "activeOrgs": ["orgID"],
+      "locationData": {
+        "sessionLog_id": {
+          "sessionLog_id": "string",
+          "orgID": "string",
+          "sessionStartTime": "ISO 8601 datetime",
+          "sessionEndTime": "ISO 8601 datetime",
+          "locationLogs": [
+            {
+              "timestamp": "ISO 8601 datetime",
+              "latitude": "decimal",
+              "longitude": "decimal",
+              "accuracy": "decimal",
+              "altitude": "decimal"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "orgRequsts": {
+    "request_id": {
+      "request_id": "string",
+      "studentID": "string",
+      "org_id": "string",
+      "name": "string",
+      "orgAddress": {
+        "streetAddress": "string",
+        "suburb": "string",
+        "city": "string",
+        "province": "string",
+        "postalCode": "string"
+      },
+      "email": "string?",
+      "phoneNo": "string?",
+      "approvalStatus": "integer (ENUM)"
+    }
+  },
+  "Organisations": {
+    "org_id": {
+      "org_id": "string",
+      "orgName": "string",
+      "orgAddress": {
+        "streetAddress": "string",
+        "suburb": "string",
+        "city": "string",
+        "province": "string",
+        "postalCode": "string"
+      },
+      "orgEmail": "string",
+      "orgPhoneNo": "string",
+      "orgLatitude": "decimal",
+      "orgLongitude": "decimal",
+      "viewport": {
+        "low": {
+          "latitude": "decimal",
+          "longitude": "decimal"
+        },
+        "high": {
+          "latitude": "decimal",
+          "longitude": "decimal"
+        }
+      }
+    }
+  },
+  "admins": {
+    "admin_id": {
+      "admin_id": "string",
+      "email": "string",
+      "adminType": "integer (ENUM)",
+      "viewableStudents": ["studentID"]
+    }
+  }
+}

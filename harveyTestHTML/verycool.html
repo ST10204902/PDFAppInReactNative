@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="PDFStyles.css">
+    <link rel="stylesheet" href="verycool.css">
+    <!-- Inter imports -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <header class="header-container">
+      <div>
+        <div class="report-title"> STXXXXXXXX Report </div>
+        <div class="date-generated"> Date Generated: DD/MM/YYYY </div>
+      </div>
+      <img src="Ctrl alt innovate logo.png" />
+    </header>
+
+    <div class="details-container">
+        <!--Column 1-->
+        <div style="grid-column: 1; grid-row: 1;"> Organisation: </div>
+        <div style="grid-column: 1; grid-row: 2;"> Start Time: </div>
+        <div style="grid-column: 1; grid-row: 3;"> End Time: </div>
+        <div style="grid-column: 1; grid-row: 4;"> Duration: </div>
+        <!--Column 2-->
+        <div style="grid-column: 2; grid-row: 1;"> Organization Name </div>
+        <div style="grid-column: 2; grid-row: 2;"> DD/MM/YYYY:HH:MM:ss </div>
+        <div style="grid-column: 2; grid-row: 3;"> DD/MM/YYYY:HH:MM:ss </div>
+        <div style="grid-column: 2; grid-row: 4;"> HH:MM:ss </div>
+        <!--Column 3-->
+        <div style="grid-column: 3; grid-row: 1;"> Street Num </div>
+        <div style="grid-column: 3; grid-row: 2;"> Suburb </div>
+        <div style="grid-column: 3; grid-row: 3;"> Province </div>
+        <div style="grid-column: 3; grid-row: 4;"> Postal Code </div>
+    </div>
+
+    <!--Maps image-->
+    <img class="google-maps-image" src="Rondebosch Common Map.png"/>
+
+    <!--Maps Details-->
+    <div class="map-details-container">
+      <div> Number of Pins: 21</div>
+      <div> Average Speed: 0.5km/h</div>
+    </div>
+
+    <!--Page number-->
+    <div class="page-number"> page 3/3 </div>
+  </body>
+  <script>
+    // function initMap() {
+    //   const map = new google.maps.Map(document.getElementById('map'), {
+    //     zoom: 10,
+    //     center: { lat: ${props.PinData[0].lat}, lng: ${props.PinData[0].long} }
+    //   });
+    //   const flightPlanCoordinates = ${JSON.stringify(
+    //     props.PinData.map((pin) => ({
+    //       lat: parseFloat(pin.lat),
+    //       lng: parseFloat(pin.long),
+    //     }))
+    //   )};
+    //   const flightPath = new google.maps.Polyline({
+    //     path: flightPlanCoordinates,
+    //     geodesic: true,
+    //     strokeColor: '#FF0000',
+    //     strokeOpacity: 1.0,
+    //     strokeWeight: 2
+    //   });
+    //   flightPath.setMap(map);
+    //   flightPlanCoordinates.forEach(coord => {
+    //     new google.maps.Marker({
+    //       position: coord,
+    //       map: map
+    //     });
+    //   });
+    // }
+  </script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap"></script>
+</html>
+

@@ -2,431 +2,231 @@ import * as React from "react";
 import { View, StyleSheet, Button, Platform, Text, Alert } from "react-native";
 import * as Print from "expo-print";
 import { shareAsync } from "expo-sharing";
-//import "../harveyTestHTML/verycool.css";
+
+import { logoBase64 } from "../assets/logoBase64";
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyC1JqHS-ggOWGyUWIC6prK3UfFFrN8MptI";
+//test data
+const testData: PDFExporterProps = {
+  studentNumber: "ST12345678",
+  orgName: "Test Organization",
+  sessionStartDateTime: "2023-01-01T10:00:00Z",
+  sessionEndDateTime: "2023-01-01T12:00:00Z",
+  streetNumber: "123",
+  suburb: "Test Suburb",
+  city: "Test City",
+  province: "Test Province",
+  postalCode: "12345",
+  viewport: "width=device-width, initial-scale=1.0",
+  PinData: [
+    { lat: "-33.958679", long: "18.480186", timestamp: "2023-01-01T10:00:00Z" },
+    { lat: "-33.957335", long: "18.480464", timestamp: "2023-01-01T10:05:00Z" },
+    { lat: "-33.955751", long: "18.481173", timestamp: "2023-01-01T10:10:00Z" },
+    { lat: "-33.954986", long: "18.481333", timestamp: "2023-01-01T10:15:00Z" },
+    { lat: "-33.954122", long: "18.481795", timestamp: "2023-01-01T10:20:00Z" },
+    { lat: "-33.953313", long: "18.482632", timestamp: "2023-01-01T10:25:00Z" },
+    { lat: "-33.952547", long: "18.483372", timestamp: "2023-01-01T10:30:00Z" },
+    { lat: "-33.951889", long: "18.484037", timestamp: "2023-01-01T10:35:00Z" },
+  ],
+  numPins: 8,
+  avgSpeed: 2.5,
+  pageNumber: 1,
+};
 
-const testHTML = `
+const generateStaticMapURL = (PinData: Array<Pin>, apiKey: string) => {
+  const baseUrl = "https://maps.googleapis.com/maps/api/staticmap?";
+  const center = `center=${PinData[3].lat},${PinData[3].long}`;
+  const zoom = "zoom=15";
+  const size = "size=600x400";
+  const mapType = "maptype=roadmap";
+
+  //generate the markers parameter for each pin
+  const markers = PinData.map(
+    (pin) => `markers=color:red%7Clabel:P%7C${pin.lat},${pin.long}`
+  ).join("&");
+
+  return `${baseUrl}${center}&${zoom}&${size}&${mapType}&${markers}&key=${apiKey}`;
+};
+
+const staticMapURL = generateStaticMapURL(
+  testData.PinData,
+  GOOGLE_MAPS_API_KEY
+);
+
+function harveyTestHTML(props: PDFExporterProps, logoBase64: string): string {
+  return `
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  
+    <style>
+      :root {
+        --title-size: 36px;
+        --details-size: 18px;
+        --separator-border: 1px solid #000;
+        --light-gray: #f0f0f0;
+        --text-gray: #666;
+        --bold-font: 500;
+        --logo-size: 100px;
+      }
+
+      body {
+        font-family: 'Inter', sans-serif;
+        padding: 20px;
+        color: #000;
+        background-color: var(--light-gray);
+        text-align: left;
+      }
+
+      .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 10px;
+        border-bottom: var(--separator-border);
+      }
+
+      .report-title {
+        font-size: var(--title-size);
+        font-weight: var(--bold-font);
+      }
+
+      .date-generated {
+        font-size: var(--details-size);
+        color: var(--text-gray);
+      }
+
+      /* Grid for details section */
+      .details-container {
+        display: grid;
+        grid-template-columns: 1fr 2fr 2fr;
+        grid-template-rows: auto auto auto auto;
+        gap: 10px;
+        margin-top: 20px;
+        padding-bottom: 20px;
+        border-bottom: var(--separator-border);
+        font-size: var(--details-size);
+      }
+
+      .details-container div {
+        padding: 5px 0;
+      }
+
+      /* Column 1: Descriptors */
+      .descriptor {
+        font-weight: var(--bold-font);
+      }
+
+      /* Column 2: Data */
+      .data {
+        font-size: var(--details-size);
+      }
+
+      /* Column 3: Address details */
+      .address {
+        font-size: var(--details-size);
+      }
+
+      /* Map container styling */
+      .maps-container {
+        margin-top: 20px;
+        border-radius: 16px;
+        border: 2px solid #ccc;
+        overflow: hidden;
+      }
+
+      .google-maps-image {
+        object-fit: cover;
+        width: 100%;
+        height: auto;
+        border-radius: 16px;
+      }
+
+      /* Map details */
+      .map-details-container {
+        margin-top: 15px;
+        font-size: var(--details-size);
+        padding-bottom: 10px;
+        color: var(--text-gray);
+      }
+
+      /* Footer and page number */
+      .footer {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 15px;
+        font-size: var(--details-size);
+        color: var(--text-gray);
+      }
+
+    </style>
   </head>
-  <body style="text-align: center;">
-    <h1 style="font-size: 50px; font-family: Helvetica Neue; font-weight: normal;">
-      Hello Expo!
-    </h1>
-    <img
-      src="https://d30j33t1r58ioz.cloudfront.net/static/guides/sdk.png"
-      style="width: 90vw;" />
-  </body>
-</html>
-`;
-//<link rel="stylesheet" href="PDFStyles.css">
-// /<link rel="stylesheet" href="../harveyTestHTML/verycool.css">
-const harveyTestHTML = (props: PDFExporterProps) =>
-  `<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
-    
-    
-    <!-- Inter imports -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
-  
-    <style>
-      /* Controls */
-:root {
-  --page-height: auto;
-  --title-size: 50px;
-  --details-size: 26px;
-  --separator-border: 4px solid gray;
-}
-
-/* Header styles */
-body {
-  height: var(--page-height);
-  display: flex;
-  flex-direction: column;
-  font-family: "Inter", Arial;
-  padding: 40px 40px 0px 40px;
-}
-
-.header-container {
-  display: flex;
-  justify-content: space-between;
-  flex-direction: row;
-  align-items: center;
-  border-bottom: var(--separator-border);
-  padding-bottom: 5px;
-}
-
-.report-title {
-  font-weight: 500;
-  font-size: var(--title-size);
-}
-
-.date-generated {
-  font-size: --details-size;
-  margin-top: 20px;
-}
-
-/* Details styles */
-
-.details-container {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  grid-template-rows: auto auto auto auto;
-  row-gap: 10px;
-  column-gap: 20px;
-  margin-top: 20px;
-  font-size: --details-size;
-  border-bottom: var(--separator-border);
-  padding-bottom: 20px;
-  margin-bottom: 110px;
-}
-
-/* Picture styles */
-
-.maps-container {
-  border-radius: 32px;
-  border: 3px solid black;
-}
-
-.google-maps-image {
-  object-fit: fill;
-  width: 100%;
-}
-
-/* Map details styles */
-.map-details-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  font-size: --details-size;
-  padding-bottom: 20px;
-  border-bottom: var(--separator-border);
-  flex: 1;
-  margin-top: 50px;
-}
-
-/* Page number styles */
-.page-number {
-  display: flex;
-  justify-content: end;
-  font-size: --details-size;
-  margin-top: 10px;
-}
-    </style>
-    </head>
   <body>
     <header class="header-container">
       <div>
-        <div class="report-title"> STXXXXXXXX Report </div>
-        <div class="date-generated"> Date Generated: DD/MM/YYYY </div>
+        <div class="report-title"> ${props.studentNumber} Report </div>
+        <div class="date-generated"> Date Generated: ${new Date().toLocaleDateString()} </div>
       </div>
-      <img src="Ctrl alt innovate logo.png" />
+      <img src="${logoBase64}" style="width: var(--logo-size);" />
     </header>
 
     <div class="details-container">
-        <!--Column 1-->
-        <div style="grid-column: 1; grid-row: 1;"> Organisation: </div>
-        <div style="grid-column: 1; grid-row: 2;"> Start Time: </div>
-        <div style="grid-column: 1; grid-row: 3;"> End Time: </div>
-        <div style="grid-column: 1; grid-row: 4;"> Duration: </div>
-        <!--Column 2-->
-        <div style="grid-column: 2; grid-row: 1;"> Organization Name </div>
-        <div style="grid-column: 2; grid-row: 2;"> DD/MM/YYYY:HH:MM:ss </div>
-        <div style="grid-column: 2; grid-row: 3;"> DD/MM/YYYY:HH:MM:ss </div>
-        <div style="grid-column: 2; grid-row: 4;"> HH:MM:ss </div>
-        <!--Column 3-->
-        <div style="grid-column: 3; grid-row: 1;"> Street Num </div>
-        <div style="grid-column: 3; grid-row: 2;"> Suburb </div>
-        <div style="grid-column: 3; grid-row: 3;"> Province </div>
-        <div style="grid-column: 3; grid-row: 4;"> Postal Code </div>
+      <!-- Row 1 -->
+      <div class="descriptor">Organisation:</div>
+      <div class="data">${props.orgName}</div>
+      <div class="address">${props.streetNumber}</div>
+
+      <!-- Row 2 -->
+      <div class="descriptor">Start Time:</div>
+      <div class="data">${props.sessionStartDateTime}</div>
+      <div class="address">${props.suburb}</div>
+
+      <!-- Row 3 -->
+      <div class="descriptor">End Time:</div>
+      <div class="data">${props.sessionEndDateTime}</div>
+      <div class="address">${props.province}</div>
+
+      <!-- Row 4 -->
+      <div class="descriptor">Duration:</div>
+      <div class="data">HH:MM:ss</div>
+      <div class="address">${props.postalCode}</div>
     </div>
 
-    <!--Maps image-->
-    <div id="map" style="width: 90vw; height: 400px;"></div>
+    <!-- Static map with multiple pins -->
+    <div class="maps-container">
+      <img src="${generateStaticMapURL(props.PinData, GOOGLE_MAPS_API_KEY)}" class="google-maps-image" />
+    </div>
 
-    <!--Maps Details-->
+    <!-- Map details -->
     <div class="map-details-container">
-      <div> Number of Pins: 21</div>
-      <div> Average Speed: 0.5km/h</div>
+      <div>Number of Pins: ${props.numPins}</div>
+      <div>Average Speed: ${props.avgSpeed} km/h</div>
     </div>
 
-    <!--Page number-->
-    <div class="page-number"> page 3/3 </div>
-  </body>
-   <script>
-    function initMap() {
-      const map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 10,
-        center: { lat: ${props.PinData[0].lat}, lng: ${props.PinData[0].long} }
-      });
-      const flightPlanCoordinates = ${JSON.stringify(
-        props.PinData.map((pin) => ({
-          lat: parseFloat(pin.lat),
-          lng: parseFloat(pin.long),
-        }))
-      )};
-      const flightPath = new google.maps.Polyline({
-        path: flightPlanCoordinates,
-        geodesic: true,
-        strokeColor: '#FF0000',
-        strokeOpacity: 1.0,
-        strokeWeight: 2
-      });
-      flightPath.setMap(map);
-      flightPlanCoordinates.forEach(coord => {
-        new google.maps.Marker({
-          position: coord,
-          map: map
-        });
-      });
-    }
-  </script>
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap"></script>
-</html>`;
-
-const harveyTestHTML1 = (props: PDFExporterProps) =>
-  `<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
-    
-    <link rel="stylesheet" href="../harveyTestHTML/verycool.css">
-    <!-- Inter imports -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
-  
-    <style>
-      /* Controls */
-:root {
-  --page-height: auto;
-  --title-size: 50px;
-  --details-size: 26px;
-  --separator-border: 4px solid gray;
-}
-
-/* Header styles */
-body {
-  height: var(--page-height);
-  display: flex;
-  flex-direction: column;
-  font-family: "Inter", Arial;
-  padding: 40px 40px 0px 40px;
-}
-
-.header-container {
-  display: flex;
-  justify-content: space-between;
-  flex-direction: row;
-  align-items: center;
-  border-bottom: var(--separator-border);
-  padding-bottom: 5px;
-}
-
-.report-title {
-  font-weight: 500;
-  font-size: var(--title-size);
-}
-
-.date-generated {
-  font-size: --details-size;
-  margin-top: 20px;
-}
-
-/* Details styles */
-
-.details-container {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  grid-template-rows: auto auto auto auto;
-  row-gap: 10px;
-  column-gap: 20px;
-  margin-top: 20px;
-  font-size: --details-size;
-  border-bottom: var(--separator-border);
-  padding-bottom: 20px;
-  margin-bottom: 110px;
-}
-
-/* Picture styles */
-
-.maps-container {
-  border-radius: 32px;
-  border: 3px solid black;
-}
-
-.google-maps-image {
-  object-fit: fill;
-  width: 100%;
-}
-
-/* Map details styles */
-.map-details-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  font-size: --details-size;
-  padding-bottom: 20px;
-  border-bottom: var(--separator-border);
-  flex: 1;
-  margin-top: 50px;
-}
-
-/* Page number styles */
-.page-number {
-  display: flex;
-  justify-content: end;
-  font-size: --details-size;
-  margin-top: 10px;
-}
-    </style>
-    </head>
-  <body>
-    <header class="header-container">
-      <div>
-        <div class="report-title"> STXXXXXXXX Report </div>
-        <div class="date-generated"> Date Generated: DD/MM/YYYY </div>
-      </div>
-      <img src="Ctrl alt innovate logo.png" />
-    </header>
-
-    <div class="details-container">
-      <!--Maps Details-->
-      <div class="map-details-container">
-        <div> Number of Pins: 21</div>
-        <div> Average Speed: 0.5km/h</div>
-      </div>
-
-      <!--Map Container-->
-      <div id="map" style="height: 400px; width: 100%;"></div>
-
-      <!--Page number-->
-      <div class="page-number"> page 3/3 </div>
+    <!-- Page number -->
+    <div class="footer">
+      Page ${props.pageNumber}/3
     </div>
   </body>
-  <script>
-    function initMap() {
-      console.log("Initializing map...");
-      const map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 10,
-        center: { lat: ${props.PinData[0].lat}, lng: ${props.PinData[0].long} }
-      });
-      const flightPlanCoordinates = ${JSON.stringify(
-        props.PinData.map((pin) => ({
-          lat: parseFloat(pin.lat),
-          lng: parseFloat(pin.long),
-        }))
-      )};
-      const flightPath = new google.maps.Polyline({
-        path: flightPlanCoordinates,
-        geodesic: true,
-        strokeColor: '#FF0000',
-        strokeOpacity: 1.0,
-        strokeWeight: 2
-      });
-      flightPath.setMap(map);
-      flightPlanCoordinates.forEach(coord => {
-        new google.maps.Marker({
-          position: coord,
-          map: map
-        });
-      });
-    }
-  </script>
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>
 </html>`;
-
-interface Pin {
-  lat: string;
-  long: string;
-}
-//Gmap API:
-interface PDFExporterProps {
-  studentNumber: string;
-  orgName: string;
-  sessionStartDateTime: string;
-  sessionEndDateTime: string;
-  streetNumber: string;
-  suburb: string;
-  city: string;
-  province: string;
-  postalCode: string;
-  viewport: string;
-  PinData: Array<Pin>; //latitudes and longitudes
-  numPins: number;
-  avgSpeed: number;
-  pageNumber: number;
 }
 
-const generateHTML = (props: PDFExporterProps) => `
-  <html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
-  <link rel="stylesheet" href="PDFStyles.css">
-</head>
-<body style="text-align: center;">
-  <h1 style="font-size: 50px; font-family: Helvetica Neue; font-weight: normal;">
-    Report for Student: ${props.studentNumber}
-  </h1>
-  <h2>Organisation: ${props.orgName}</h2>
-  <p>Session Start: ${props.sessionStartDateTime}</p>
-  <p>Session End: ${props.sessionEndDateTime}</p>
-  <p>Location: ${props.streetNumber}, ${props.suburb}, ${props.city}, ${
-  props.province
-}, ${props.postalCode}</p>
-  <div id="map" style="width: 90vw; height: 400px;"></div>
-  <p>Number of Pins: ${props.numPins}</p>
-  <p>Average Speed: ${props.avgSpeed} km/h</p>
-  <footer>
-    <div class="horizontal-spacer"></div>
-    <p>Page <span class="page-number"></span></p>
-  </footer>
-  <script>
-    function initMap() {
-      const map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 10,
-        center: { lat: ${props.PinData[0].lat}, lng: ${props.PinData[0].long} }
-      });
-      const flightPlanCoordinates = ${JSON.stringify(
-        props.PinData.map((pin) => ({
-          lat: parseFloat(pin.lat),
-          lng: parseFloat(pin.long),
-        }))
-      )};
-      const flightPath = new google.maps.Polyline({
-        path: flightPlanCoordinates,
-        geodesic: true,
-        strokeColor: '#FF0000',
-        strokeOpacity: 1.0,
-        strokeWeight: 2
-      });
-      flightPath.setMap(map);
-      flightPlanCoordinates.forEach(coord => {
-        new google.maps.Marker({
-          position: coord,
-          map: map
-        });
-      });
-    }
-  </script>
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap"></script>
-</body>
-</html>
-`;
 
 export default function PDFExporter() {
   const [selectedPrinter, setSelectedPrinter] = React.useState<any>();
   console.log("GOOGLE_MAPS_API_KEY", GOOGLE_MAPS_API_KEY);
   const print = async () => {
     try {
+      //generate the html content
+      const htmlContent = harveyTestHTML(testData, logoBase64);
+
       // On iOS/android prints the given html. On web prints the HTML from the current page.
       await Print.printAsync({
         //html: generateHTML(testData),
-        html: harveyTestHTML(testData),
+        html: htmlContent,
         printerUrl: selectedPrinter?.url, // iOS only
       });
     } catch (error) {
@@ -437,10 +237,11 @@ export default function PDFExporter() {
 
   const printToFile = async () => {
     try {
-      // On iOS/android prints the given html. On web prints the HTML from the current page.
-      const { uri } = await Print.printToFileAsync({
-        html: harveyTestHTML(testData),
-      });
+      // Generate the HTML content using the Base64 logo
+      const htmlContent = harveyTestHTML(testData, logoBase64);
+
+      // Print to file
+      const { uri } = await Print.printToFileAsync({ html: htmlContent });
       console.log("File has been saved to:", uri);
       await shareAsync(uri, { UTI: ".pdf", mimeType: "application/pdf" });
     } catch (error) {
@@ -480,26 +281,28 @@ export default function PDFExporter() {
   );
 }
 
-//test data
-const testData: PDFExporterProps = {
-  studentNumber: "123456",
-  orgName: "Test Organization",
-  sessionStartDateTime: "2023-01-01T10:00:00Z",
-  sessionEndDateTime: "2023-01-01T12:00:00Z",
-  streetNumber: "123",
-  suburb: "Test Suburb",
-  city: "Test City",
-  province: "Test Province",
-  postalCode: "12345",
-  viewport: "width=device-width, initial-scale=1.0",
-  PinData: [
-    { lat: "37.7749", long: "-122.4194" },
-    { lat: "34.0522", long: "-118.2437" },
-  ],
-  numPins: 2,
-  avgSpeed: 50,
-  pageNumber: 1,
-};
+interface Pin {
+  lat: string;
+  long: string;
+  timestamp: string;
+}
+//Gmap API:
+interface PDFExporterProps {
+  studentNumber: string;
+  orgName: string;
+  sessionStartDateTime: string;
+  sessionEndDateTime: string;
+  streetNumber: string;
+  suburb: string;
+  city: string;
+  province: string;
+  postalCode: string;
+  viewport: string;
+  PinData: Array<Pin>; //latitudes and longitudes
+  numPins: number;
+  avgSpeed: number;
+  pageNumber: number;
+}
 
 const styles = StyleSheet.create({
   container: {

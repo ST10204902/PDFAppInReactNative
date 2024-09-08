@@ -1,7 +1,7 @@
 {
   "students": {
     "student_id": {
-      "student_id": "string",
+      "student_id": "string", 
       "studentNumber": "string",
       "email": "string",
       "profilePhotoURL": "string?",

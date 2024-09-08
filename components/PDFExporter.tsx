@@ -22,8 +22,8 @@ import { shareAsync } from "expo-sharing";
 // Base64 encoded logo image for the PDF report
 import { logoBase64 } from "../assets/logoBase64";
 
-//This key has been rolled and is no longer functional
-//It will be implemente via GitHub secrets in the future
+// This key has been rolled and is no longer functional
+// It will be implemented via GitHub secrets in the future
 const GOOGLE_MAPS_API_KEY =
   "REPLACE_WITH_YOUR_API_KEY -> CHECK README TO GET ONE";
 
@@ -489,6 +489,7 @@ interface PDFExporterProps {
   organisation: Organisation;
 }
 
+// Styles for the PDF Exporter component
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -52,7 +52,7 @@ To use the Google Maps functionality in PDFAppInReactNative, you will need to ob
 
 7. In this React Native project, open the `PDFExporter.js` file.
 
-8. Locate the line that says `$GOOGLE_MAPS_API_KEY$` and replace it with your API key.
+8. Locate the line that says `GOOGLE_MAPS_API_KEY` and replace the value with your API key.
 
 9. Save the file and restart the development server.
 

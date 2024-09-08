@@ -27,9 +27,9 @@ To install PDFAppInReactNative, follow these steps:
 4. Start the development server:
 
    ```shell
-   npx start expo
+   npx expo start
    ```
 
-5. Connect your device or emulator to the development server. You can use the Expo app on your mobile device or run the app on an emulator.
+5. Connect your device or emulator to the development server. You can use the Expo Go app on your mobile device or run the app on an emulator.
 
 6. Once the app is running, you can start using the PDFExporter.
